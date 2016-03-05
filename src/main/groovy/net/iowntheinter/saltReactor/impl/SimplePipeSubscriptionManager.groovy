@@ -6,21 +6,19 @@ import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.groovy.core.eventbus.EventBus
-import io.vertx.groovy.core.shareddata.SharedData
+
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
 
 /**
  * Created by grant on 11/5/15.
  */
 class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
-    private SharedData sd
     private EventBus eb
     private Logger log
     private subscriptionChannel
     private SaltStackClient saltClient
 
-    SimplePipeSubscriptionManager(SharedData s, EventBus e, SaltStackClient c) {
-        sd = s
+    SimplePipeSubscriptionManager(EventBus e, SaltStackClient c) {
         eb = e
         log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
         saltClient = c
@@ -71,10 +69,10 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             eb.publish(channel, pkg)
         } catch (e) {
             ret = false
-            cb([status:ret, error:e.getMessage()])
+            cb([status: ret, error: e.getMessage()])
         }
         if (ret)
-            cb([status:ret, error:null])
+            cb([status: ret, error: null])
     }
 
     private boolean sendToSaltBus(tag, data, cb) {
@@ -84,15 +82,15 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             saltClient.sendEvent(tag, data) //we should switch this to sendEventAsync
         } catch (e) {
             ret = false
-            cb([status:ret, error:e.getMessage()])
+            cb([status: ret, error: e.getMessage()])
         }
         if (ret)
-            cb([status:ret, error:null])
+            cb([status: ret, error: null])
     }
 
     @Override
     public boolean manage(String vxchannel) {
-        def subscriptionChannel = eb.consumer(vxchannel)
+        subscriptionChannel = eb.consumer(vxchannel)
         subscriptionChannel.handler({ message ->
             JsonObject jreq = new JsonObject()
             try {

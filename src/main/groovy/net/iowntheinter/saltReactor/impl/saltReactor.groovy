@@ -18,7 +18,6 @@ import javax.websocket.CloseReason;
 
 class saltReactor implements EventListener {
     private Vertx vx
-    private SharedData sd
     private EventBus eb
     private JsonObject config
     private Logger log
@@ -28,18 +27,16 @@ class saltReactor implements EventListener {
     saltReactor(Vertx v, JsonObject c, SaltStackClient s) {
         vx = v;
         sc = s
-        sd = v.sharedData()
         config = c
         eb = v.eventBus()
         log = LoggerFactory.getLogger("saltReactor")
-        mgr = new SimplePipeSubscriptionManager(sd, eb, sc)
+        mgr = new SimplePipeSubscriptionManager(eb, sc)
     }
     CloseReason closeReason;
 
 
     @Override
     void notify(Event event) {
-
         try{
             mgr.process(event)
         } catch(e){
