@@ -1,24 +1,26 @@
 package net.iowntheinter.saltReactor.impl
 
-import com.suse.saltstack.netapi.client.SaltStackClient
-import com.suse.saltstack.netapi.datatypes.Event
+import com.suse.salt.netapi.client.SaltClient
+import com.suse.salt.netapi.datatypes.Event
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.groovy.core.eventbus.EventBus
-
+import io.vertx.groovy.core.shareddata.SharedData
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
 
 /**
  * Created by grant on 11/5/15.
  */
 class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
+    private SharedData sd
     private EventBus eb
     private Logger log
     private subscriptionChannel
-    private SaltStackClient saltClient
+    private SaltClient saltClient
 
-    SimplePipeSubscriptionManager(EventBus e, SaltStackClient c) {
+    SimplePipeSubscriptionManager(SharedData s, EventBus e, SaltClient c) {
+        sd = s
         eb = e
         log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
         saltClient = c
@@ -69,28 +71,27 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             eb.publish(channel, pkg)
         } catch (e) {
             ret = false
-            cb([status: ret, error: e.getMessage()])
+            cb([status:ret, error:e.getMessage()])
         }
         if (ret)
-            cb([status: ret, error: null])
+            cb([status:ret, error:null])
     }
 
     private boolean sendToSaltBus(tag, data, cb) {
         def ret = true
         try {
-
             saltClient.sendEvent(tag, data) //we should switch this to sendEventAsync
         } catch (e) {
             ret = false
-            cb([status: ret, error: e.getMessage()])
+            cb([status:ret, error:e.getMessage()])
         }
         if (ret)
-            cb([status: ret, error: null])
+            cb([status:ret, error:null])
     }
 
     @Override
     public boolean manage(String vxchannel) {
-        subscriptionChannel = eb.consumer(vxchannel)
+        def subscriptionChannel = eb.consumer(vxchannel)
         subscriptionChannel.handler({ message ->
             JsonObject jreq = new JsonObject()
             try {
