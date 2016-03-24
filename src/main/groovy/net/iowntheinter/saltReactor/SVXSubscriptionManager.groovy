@@ -1,6 +1,6 @@
 package net.iowntheinter.saltReactor
 
-import com.suse.saltstack.netapi.datatypes.Event;
+import com.suse.salt.netapi.datatypes.Event;
 
 /**
  * Created by grant on 11/5/15.

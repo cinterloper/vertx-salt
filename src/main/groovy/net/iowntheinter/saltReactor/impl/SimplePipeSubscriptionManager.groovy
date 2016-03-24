@@ -1,7 +1,7 @@
 package net.iowntheinter.saltReactor.impl
 
-import com.suse.saltstack.netapi.client.SaltStackClient
-import com.suse.saltstack.netapi.datatypes.Event
+import com.suse.salt.netapi.client.SaltClient
+import com.suse.salt.netapi.datatypes.Event
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
@@ -17,9 +17,9 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
     private EventBus eb
     private Logger log
     private subscriptionChannel
-    private SaltStackClient saltClient
+    private SaltClient saltClient
 
-    SimplePipeSubscriptionManager(SharedData s, EventBus e, SaltStackClient c) {
+    SimplePipeSubscriptionManager(SharedData s, EventBus e, SaltClient c) {
         sd = s
         eb = e
         log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
@@ -80,7 +80,6 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
     private boolean sendToSaltBus(tag, data, cb) {
         def ret = true
         try {
-
             saltClient.sendEvent(tag, data) //we should switch this to sendEventAsync
         } catch (e) {
             ret = false

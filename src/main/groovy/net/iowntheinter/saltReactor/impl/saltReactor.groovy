@@ -1,16 +1,16 @@
 package net.iowntheinter.saltReactor.impl
 
-import com.suse.saltstack.netapi.client.SaltStackClient
+import com.suse.salt.netapi.client.SaltClient
 
 /**
  * Created by grant on 10/20/15.
  */
-import com.suse.saltstack.netapi.event.EventListener
+import com.suse.salt.netapi.event.EventListener
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.groovy.core.eventbus.EventBus
 import io.vertx.groovy.core.shareddata.SharedData
-import com.suse.saltstack.netapi.datatypes.Event;
+import com.suse.salt.netapi.datatypes.Event;
 import io.vertx.groovy.core.Vertx;
 import io.vertx.core.json.JsonObject
 
@@ -22,10 +22,10 @@ class saltReactor implements EventListener {
     private EventBus eb
     private JsonObject config
     private Logger log
-    private SaltStackClient sc
+    private SaltClient sc
     def mgr
 
-    saltReactor(Vertx v, JsonObject c, SaltStackClient s) {
+    saltReactor(Vertx v, JsonObject c, SaltClient s) {
         vx = v;
         sc = s
         sd = v.sharedData()
