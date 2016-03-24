@@ -6,21 +6,18 @@ import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.groovy.core.eventbus.EventBus
-import io.vertx.groovy.core.shareddata.SharedData
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
 
 /**
  * Created by grant on 11/5/15.
  */
 class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
-    private SharedData sd
     private EventBus eb
     private Logger log
     private subscriptionChannel
     private SaltClient saltClient
 
-    SimplePipeSubscriptionManager(SharedData s, EventBus e, SaltClient c) {
-        sd = s
+    SimplePipeSubscriptionManager(EventBus e, SaltClient c) {
         eb = e
         log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
         saltClient = c
