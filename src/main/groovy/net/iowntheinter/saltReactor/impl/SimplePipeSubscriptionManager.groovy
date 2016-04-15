@@ -44,6 +44,13 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
         String verb
         def result
         def dstAddr
+        /*
+        anything sent by vertx into salt will also get picked up here as:
+        salt/netapi/hook/$ADDR
+        perhaps, when sending messages into the salt bus, we should add a vertx source id
+        then silence messages from ourselves, or possiably everything at this address
+         */
+
         List fields = tag.tokenize('/')
         if (fields.last() == fields.first()) {
             dstAddr = fields.first();
