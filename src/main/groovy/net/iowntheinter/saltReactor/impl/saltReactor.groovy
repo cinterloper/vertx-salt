@@ -9,30 +9,28 @@ import com.suse.salt.netapi.event.EventListener
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.groovy.core.eventbus.EventBus
-import io.vertx.groovy.core.shareddata.SharedData
 import com.suse.salt.netapi.datatypes.Event;
 import io.vertx.groovy.core.Vertx;
 import io.vertx.core.json.JsonObject
+import net.iowntheinter.saltReactor.SVXSubscriptionManager
 
 import javax.websocket.CloseReason;
 
 class saltReactor implements EventListener {
     private Vertx vx
-    private SharedData sd
     private EventBus eb
     private JsonObject config
     private Logger log
     private SaltClient sc
-    def mgr
+    SVXSubscriptionManager mgr
 
     saltReactor(Vertx v, JsonObject c, SaltClient s) {
         vx = v;
         sc = s
-        sd = v.sharedData()
         config = c
         eb = v.eventBus()
         log = LoggerFactory.getLogger("saltReactor")
-        mgr = new SimplePipeSubscriptionManager(sd, eb, sc)
+        mgr = new SimplePipeSubscriptionManager( eb, sc)
     }
     CloseReason closeReason;
 

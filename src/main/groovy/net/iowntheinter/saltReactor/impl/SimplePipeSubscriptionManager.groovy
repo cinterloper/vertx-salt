@@ -6,21 +6,21 @@ import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.groovy.core.eventbus.EventBus
-import io.vertx.groovy.core.shareddata.SharedData
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
+
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 /**
  * Created by grant on 11/5/15.
  */
 class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
-    private SharedData sd
     private EventBus eb
     private Logger log
     private subscriptionChannel
     private SaltClient saltClient
 
-    SimplePipeSubscriptionManager(SharedData s, EventBus e, SaltClient c) {
-        sd = s
+    SimplePipeSubscriptionManager(EventBus e, SaltClient c) {
         eb = e
         log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
         saltClient = c
@@ -78,15 +78,16 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
     }
 
     private boolean sendToSaltBus(tag, data, cb) {
+        Future tsk = new CompletableFuture()
         def ret = true
         try {
-            saltClient.sendEvent(tag, data) //we should switch this to sendEventAsync
+            tsk=saltClient.sendEventAsync(tag as String, data as String)
         } catch (e) {
             ret = false
             cb([status:ret, error:e.getMessage()])
         }
         if (ret)
-            cb([status:ret, error:null])
+            cb([status:ret, error:null,future:tsk ])
     }
 
     @Override
@@ -101,7 +102,6 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             }
             processEBReq(jreq, { response ->
                 log.info('processed ${response}')
-
             })
             println("I have received a message: ${message.body()}")
         }).completionHandler({ res ->
@@ -113,7 +113,13 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
         })
     }
 
-
+/*
+   {
+     "action":"saltPush",
+     "addr":"dst/salt/address",
+     "data": { "another":"jstruct" }
+    }
+ */
     private boolean processEBReq(JsonObject req, cb) {
         def type = req.getString("action")
         def response
@@ -121,8 +127,8 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             case 'list':
                 break;
             case 'saltPush': //perhaps should block loops of this message
-                def addr = type.getString("addr")
-                def data = type.getString("data")
+                def addr = req.getString("addr")
+                def data = req.getJsonObject("data")
                 sendToSaltBus(addr, data, { res ->
                     log.info("result of sending to salt ${addr} : ${res} ")
                 })
