@@ -5,7 +5,7 @@ import com.suse.salt.netapi.datatypes.Event
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
-import io.vertx.groovy.core.eventbus.EventBus
+import io.vertx.core.eventbus.EventBus
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
 
 import java.util.concurrent.CompletableFuture

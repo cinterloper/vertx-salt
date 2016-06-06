@@ -33,7 +33,7 @@ def token;
 token = client.login(UN, pass, AuthModule.PAM);
 println("salt auth token: " + token.token + " Until: " + token.expire + " Perms : " + token.getPerms() )
 
-EventListener sr = new saltReactor(vertx,new JsonObject(), client)
+EventListener sr = new saltReactor(v,new JsonObject(), client)
 
 es = new EventStream(cfg)
 es.addEventListener(sr)

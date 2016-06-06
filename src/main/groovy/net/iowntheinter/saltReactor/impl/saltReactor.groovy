@@ -8,9 +8,9 @@ import com.suse.salt.netapi.client.SaltClient
 import com.suse.salt.netapi.event.EventListener
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
-import io.vertx.groovy.core.eventbus.EventBus
+import io.vertx.core.eventbus.EventBus
 import com.suse.salt.netapi.datatypes.Event;
-import io.vertx.groovy.core.Vertx;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
 
