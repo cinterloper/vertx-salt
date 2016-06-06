@@ -28,15 +28,15 @@ repositories {
 def libversion = '3.2.1'
 
 
-version = '3.2.1'
+version = '3.2.1-2'
 sourceCompatibility = '1.8'
 
 dependencies {
-    compile "io.vertx:vertx-core:$version"
-    compile "io.vertx:vertx-lang-groovy:$version"
-    compile "io.vertx:vertx-auth-common:$version"
-    compile "io.vertx:vertx-auth-shiro:$version"
-    compile "io.vertx:vertx-shell:$version"
+    compile "io.vertx:vertx-core:$libversion"
+    compile "io.vertx:vertx-lang-groovy:$libversion"
+    compile "io.vertx:vertx-auth-common:$libversion"
+    compile "io.vertx:vertx-auth-shiro:$libversion"
+    compile "io.vertx:vertx-shell:$libversion"
     compile "org.slf4j:slf4j-api:1.7.12"
     compile 'org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk:1.12'
     compile 'com.suse.salt:salt-netapi-client:0.7.0'
@@ -57,9 +57,7 @@ shadowJar {
 
 publishing {
     repositories {
-        maven {
-            url "file:///tmp/maven-repo"
-        }
+        mavenLocal()
         if (AWS_MVN_BUCKET && !AWS_MVN_BUCKET.allWhitespace) {
             maven {
                 url "s3://$AWS_MVN_BUCKET/maven2"

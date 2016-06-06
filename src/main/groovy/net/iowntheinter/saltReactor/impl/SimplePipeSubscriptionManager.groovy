@@ -62,7 +62,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             log.debug("data for this oddball: ${data}")
         }
         //do the vulcan mind meld
-        sendToVertxBus(dstAddr, ['tags': fields, 'data': data], { res ->
+        sendToVertxBus(dstAddr, new JsonObject(['tags': fields, 'data': data]), { res ->
             log.info('result of vxbus send for ' + fields + " : " + res)
             return (true)
         })
@@ -72,7 +72,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
     }
 
 
-    private boolean sendToVertxBus(channel, pkg, cb) {
+    private boolean sendToVertxBus(channel, JsonObject pkg, cb) {
         def ret = true
         try {
             eb.publish(channel, pkg)
