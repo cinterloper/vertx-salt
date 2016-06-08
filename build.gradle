@@ -28,7 +28,7 @@ repositories {
 def libversion = '3.2.1'
 
 
-version = '3.2.1-2'
+version = '3.2.1-4'
 sourceCompatibility = '1.8'
 
 dependencies {
