@@ -168,7 +168,9 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
                 String data = req.getJsonObject("data")
                 sendToSaltBus(addr, data, { res ->
                     log.info("result of sending to salt ${addr} : ${res} ")
+                    cb(res)
                 })
+
                 break;
             case 'reflect': //reflect all messages from an arbitrary vertx channel into the salt system
                 String channel = req.getString("vertx_channel")
@@ -179,10 +181,8 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
                 break;
             case 'unreflect': //remove a reflector
                 String id = req.getString("reflector_id")
-                removeReflector(id,{})
+                removeReflector(id,cb)
                 break
-
-                cb()
 
         }
 
