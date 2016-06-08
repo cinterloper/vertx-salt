@@ -3,7 +3,7 @@ write your own version of it, instead of launching this as a verticle/stand alon
 
 
 everything you send into the salt event system gets prefixed by
-https://github.com/saltstack/salt/blob/develop/salt/netapi/rest_cherrypy/app.py#L2122
+https://github.com/saltstack/salt/blob/6a691360808b1f3b7e9a10726b9c4803f8455aa1/salt/netapi/rest_cherrypy/app.py#L2136-L2139
 
 ['salt', 'netapi', 'hook' .. ( the rest of your tags here) ]
 
