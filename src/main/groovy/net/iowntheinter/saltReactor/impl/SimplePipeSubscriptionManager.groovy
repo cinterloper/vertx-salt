@@ -161,6 +161,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
         def response
         switch (type) {
             case 'list':
+                cb(reflectors.keySet())
                 break;
             case 'saltPush': //perhaps should block loops of this message
                 String addr = req.getString("addr")
