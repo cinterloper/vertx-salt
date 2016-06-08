@@ -7,7 +7,7 @@ import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.core.eventbus.EventBus
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
-
+import io.vertx.core.eventbus.MessageConsumer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
@@ -19,7 +19,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
     private Logger log
     private subscriptionChannel
     private SaltClient saltClient
-
+    private HashMap reflectors = new HashMap()
     SimplePipeSubscriptionManager(EventBus e, SaltClient c) {
         eb = e
         log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
@@ -71,6 +71,34 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
 
     }
 
+    private boolean removeReflector(String RID, cb){
+        try{
+            MessageConsumer r = reflectors[RID] as MessageConsumer
+            r.unregister()
+        }
+        catch(e){
+            log.error("error ${e}")
+        }
+        cb()
+    }
+
+    private boolean createReflector(String vxchannel, String saltaddr, cb) {
+        def ret = true
+        MessageConsumer subscriptionChannel = eb.consumer(vxchannel)
+        subscriptionChannel.handler({ message ->
+            String jreq = ""
+            try {
+                jreq = (message.body() as JsonObject)
+                sendToSaltBus(saltaddr,jreq,cb)
+            } catch (e) {
+                log.error("error ${e}")
+            }
+        })
+        //store a refrence to the channel so it can be removed, return the id
+        def RID = UUID.randomUUID().toString()
+        reflectors[RID]=subscriptionChannel
+        cb(RID)
+    }
 
     private boolean sendToVertxBus(channel, JsonObject pkg, cb) {
         def ret = true
@@ -78,23 +106,23 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             eb.publish(channel, pkg)
         } catch (e) {
             ret = false
-            cb([status:ret, error:e.getMessage()])
+            cb([status: ret, error: e.getMessage()])
         }
         if (ret)
-            cb([status:ret, error:null])
+            cb([status: ret, error: null])
     }
 
-    private boolean sendToSaltBus(tag, data, cb) {
+    private boolean sendToSaltBus(String tag, String data, cb) {
         Future tsk = new CompletableFuture()
         def ret = true
         try {
-            tsk=saltClient.sendEventAsync(tag as String, data as String)
+            tsk = saltClient.sendEventAsync(tag as String, data as String)
         } catch (e) {
             ret = false
-            cb([status:ret, error:e.getMessage()])
+            cb([status: ret, error: e.getMessage()])
         }
         if (ret)
-            cb([status:ret, error:null,future:tsk ])
+            cb([status: ret, error: null, future: tsk])
     }
 
     @Override
@@ -109,6 +137,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             }
             processEBReq(jreq, { response ->
                 log.info('processed ${response}')
+                message.reply(response)
             })
             println("I have received a message: ${message.body()}")
         }).completionHandler({ res ->
@@ -127,6 +156,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
      "data": { "another":"jstruct" }
     }
  */
+
     private boolean processEBReq(JsonObject req, cb) {
         def type = req.getString("action")
         def response
@@ -134,12 +164,26 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             case 'list':
                 break;
             case 'saltPush': //perhaps should block loops of this message
-                def addr = req.getString("addr")
-                def data = req.getJsonObject("data")
+                String addr = req.getString("addr")
+                String data = req.getJsonObject("data")
                 sendToSaltBus(addr, data, { res ->
                     log.info("result of sending to salt ${addr} : ${res} ")
                 })
                 break;
+            case 'reflect': //reflect all messages from an arbitrary vertx channel into the salt system
+                String channel = req.getString("vertx_channel")
+                String addr = req.getString("salt_address")
+                createReflector(channel,addr,{String RID ->
+                    cb(RID)
+                })
+                break;
+            case 'unreflect': //remove a reflector
+                String id = req.getString("reflector_id")
+                removeReflector(id,{})
+                break
+
+                cb()
+
         }
 
 
