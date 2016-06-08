@@ -42,7 +42,6 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
         String type
         String ident
         String verb
-        def result
         def dstAddr
         /*
         anything sent by vertx into salt will also get picked up here as:
@@ -88,7 +87,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
         subscriptionChannel.handler({ message ->
             String jreq = ""
             try {
-                jreq = (message.body() as JsonObject)
+                jreq = message.body().toString()
                 sendToSaltBus(saltaddr,jreq,cb)
             } catch (e) {
                 log.error("error ${e}")
@@ -185,7 +184,5 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
                 break
 
         }
-
-
     }
 }
