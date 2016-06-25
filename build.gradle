@@ -25,10 +25,10 @@ repositories {
         }
     }
 }
-def libversion = '3.2.1'
+def libversion = '3.3.0'
 
 
-version = '3.2.1-4'
+version = '3.3.0-4'
 sourceCompatibility = '1.8'
 
 dependencies {
