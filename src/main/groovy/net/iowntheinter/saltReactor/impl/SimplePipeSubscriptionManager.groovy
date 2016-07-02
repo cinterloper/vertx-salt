@@ -138,7 +138,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
                 log.info('processed ${response}')
                 message.reply(response)
             })
-            println("I have received a message: ${message.body()}")
+            log.info("I have received a message: ${message.body()}")
         }).completionHandler({ res ->
             if (res.succeeded()) {
                 log.info("The saltEventManger eb registration has reached all nodes")
