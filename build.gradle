@@ -28,7 +28,7 @@ repositories {
 def libversion = '3.3.0'
 
 
-version = '3.3.0-5'
+version = '3.3.0-6'
 sourceCompatibility = '1.8'
 
 dependencies {
@@ -38,8 +38,8 @@ dependencies {
     compile "io.vertx:vertx-auth-shiro:$libversion"
     compile "io.vertx:vertx-shell:$libversion"
     compile "org.slf4j:slf4j-api:1.7.12"
-    compile 'org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk:1.12'
-    compile 'com.suse.salt:salt-netapi-client:0.7.0'
+    compile 'org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk:1.13'
+    compile 'com.suse.salt:salt-netapi-client:0.8.0'
 }
 
 mainClassName = 'io.vertx.core.Launcher'

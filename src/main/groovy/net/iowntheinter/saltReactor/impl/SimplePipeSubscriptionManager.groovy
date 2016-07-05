@@ -20,6 +20,7 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
     private subscriptionChannel
     private SaltClient saltClient
     private HashMap reflectors = new HashMap()
+
     SimplePipeSubscriptionManager(EventBus e, SaltClient c) {
         eb = e
         log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
@@ -51,14 +52,14 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
          */
 
         List fields = tag.tokenize('/')
-        if (fields.last() == fields.first()) {
+        if ((fields.last() == fields.first()) && fields.size() == 2) {
             dstAddr = fields.first();
         } else { //addressed to salt/job or salt/cloud, simple
             dstAddr = fields[0] + '/' + fields[1]
         }
         if (fields[0] != "salt") {
             type = fields[0]
-            log.debug("data for this oddball: ${data}")
+            log.debug("recieved a message that does not begin with 'salt':\n${tag} :\n ${data}")
         }
         //do the vulcan mind meld
         sendToVertxBus(dstAddr, new JsonObject(['tags': fields, 'data': data]), { res ->
@@ -70,12 +71,12 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
 
     }
 
-    private boolean removeReflector(String RID, cb){
-        try{
+    private boolean removeReflector(String RID, cb) {
+        try {
             MessageConsumer r = reflectors[RID] as MessageConsumer
             r.unregister()
         }
-        catch(e){
+        catch (e) {
             log.error("error ${e}")
         }
         cb()
@@ -88,14 +89,14 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             String jreq = ""
             try {
                 jreq = message.body().toString()
-                sendToSaltBus(saltaddr,jreq,cb)
+                sendToSaltBus(saltaddr, jreq, cb)
             } catch (e) {
                 log.error("error ${e}")
             }
         })
         //store a refrence to the channel so it can be removed, return the id
         def RID = UUID.randomUUID().toString()
-        reflectors[RID]=subscriptionChannel
+        reflectors[RID] = subscriptionChannel
         cb(RID)
     }
 
@@ -175,13 +176,13 @@ class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
             case 'reflect': //reflect all messages from an arbitrary vertx channel into the salt system
                 String channel = req.getString("vertx_channel")
                 String addr = req.getString("salt_address")
-                createReflector(channel,addr,{String RID ->
+                createReflector(channel, addr, { String RID ->
                     cb(RID)
                 })
                 break;
             case 'unreflect': //remove a reflector
                 String id = req.getString("reflector_id")
-                removeReflector(id,cb)
+                removeReflector(id, cb)
                 break
 
         }
