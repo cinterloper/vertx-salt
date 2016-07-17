@@ -14,14 +14,14 @@ import java.util.concurrent.Future
 /**
  * Created by grant on 11/5/15.
  */
-class SimplePipeSubscriptionManager implements SVXSubscriptionManager {
+class subscriptionManager implements SVXSubscriptionManager {
     private EventBus eb
     private Logger log
     private subscriptionChannel
     private SaltClient saltClient
     private HashMap reflectors = new HashMap()
 
-    SimplePipeSubscriptionManager(EventBus e, SaltClient c) {
+    subscriptionManager(EventBus e, SaltClient c) {
         eb = e
         log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
         saltClient = c

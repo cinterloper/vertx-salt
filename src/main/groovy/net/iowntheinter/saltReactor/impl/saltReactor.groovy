@@ -14,8 +14,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
 
-import javax.websocket.CloseReason;
-
 class saltReactor implements EventListener {
     private Vertx vx
     private EventBus eb
@@ -23,14 +21,13 @@ class saltReactor implements EventListener {
     private Logger log
     private SaltClient sc
     SVXSubscriptionManager mgr
-
     saltReactor(Vertx v, JsonObject c, SaltClient s) {
         vx = v;
         sc = s
         config = c
         eb = v.eventBus()
         log = LoggerFactory.getLogger("saltReactor")
-        mgr = new SimplePipeSubscriptionManager( eb, sc)
+        mgr = new subscriptionManager( eb, sc)
     }
     CloseReason closeReason;
 
@@ -58,5 +55,7 @@ class saltReactor implements EventListener {
 
 
 }
+
+import javax.websocket.CloseReason;
 
 
