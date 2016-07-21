@@ -14,7 +14,10 @@ import io.vertx.groovy.core.Vertx as GVertx
 import io.vertx.core.Vertx
 import net.iowntheinter.saltReactor.impl.saltReactor
 
-println("hello slt")
+println("simple example in groovy, but you can do this in java," +
+        "everything else compiles to a class")
+
+
 gv = vertx as GVertx
 Vertx v = gv.getDelegate() as Vertx
 

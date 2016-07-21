@@ -71,7 +71,7 @@ class subscriptionManager implements SVXSubscriptionManager {
 
     }
 
-    private boolean removeReflector(String RID, cb) {
+    public boolean removeReflector(String RID, cb) {
         try {
             MessageConsumer r = reflectors[RID] as MessageConsumer
             r.unregister()
@@ -82,7 +82,7 @@ class subscriptionManager implements SVXSubscriptionManager {
         cb()
     }
 
-    private boolean createReflector(String vxchannel, String saltaddr, cb) {
+    public boolean createReflector(String vxchannel, String saltaddr, cb) {
         def ret = true
         MessageConsumer subscriptionChannel = eb.consumer(vxchannel)
         subscriptionChannel.handler({ message ->
