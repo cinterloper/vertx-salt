@@ -39,7 +39,7 @@ class subscriptionManager implements SVXSubscriptionManager {
     public boolean process(Event e) {
         def data = e.getData()
         def tag = e.getTag()
-        log.info("got event ${tag}")
+        log.debug("got salt event ${tag}")
         String type
         String ident
         String verb
@@ -63,10 +63,10 @@ class subscriptionManager implements SVXSubscriptionManager {
         }
         //do the vulcan mind meld
         sendToVertxBus(dstAddr, new JsonObject(['tags': fields, 'data': data]), { res ->
-            log.info('result of vxbus send for ' + fields + " : " + res)
+            log.debug('result of vxbus send for ' + fields + " : " + res)
             return (true)
         })
-        log.info("event: ${["type": type, "data": data, "ident": ident, "verb": verb]}")
+        log.debug("event: ${["type": type, "data": data, "ident": ident, "verb": verb]}")
 
 
     }
@@ -136,10 +136,10 @@ class subscriptionManager implements SVXSubscriptionManager {
                 log.error("error ${e}")
             }
             processEBReq(jreq, { response ->
-                log.info('processed ${response}')
+                log.debug('processed ${response}')
                 message.reply(response)
             })
-            log.info("I have received a message: ${message.body()}")
+            log.debug("vertx message: ${message.body()}")
         }).completionHandler({ res ->
             if (res.succeeded()) {
                 log.info("The saltEventManger eb registration has reached all nodes")
