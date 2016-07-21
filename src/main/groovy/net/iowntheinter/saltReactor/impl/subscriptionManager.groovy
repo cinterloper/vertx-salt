@@ -50,28 +50,31 @@ class subscriptionManager implements SVXSubscriptionManager {
         perhaps, when sending messages into the salt bus, we should add a vertx source id
         then silence messages from ourselves, or possiably everything at this address
          */
-
-        List fields = tag.tokenize('/')
-        if ((fields.last() == fields.first()) && fields.size() == 2) {
-            dstAddr = fields.first();
-        } else { //addressed to salt/job or salt/cloud, simple
-            dstAddr = fields[0] + '/' + fields[1]
+        try {
+            List fields = tag.tokenize('/')
+            if ((fields.last() == fields.first()) && fields.size() == 2) {
+                dstAddr = fields.first();
+            } else { //addressed to salt/job or salt/cloud, simple
+                dstAddr = fields[0] + '/' + fields[1]
+            }
+            if (fields[0] != "salt") {
+                type = fields[0]
+                log.debug("recieved a message that does not begin with 'salt':\n${tag} :\n ${data}")
+            }
+            //do the vulcan mind meld
+            sendToVertxBus(dstAddr, new JsonObject(['tags': fields, 'data': data]), { res ->
+                log.debug('result of vxbus send for ' + fields + " : " + res)
+                return (true)
+            })
+            log.debug("event: ${["type": type, "data": data, "ident": ident, "verb": verb]}")
+        } catch (x) {
+            log.error(x)
+            return false
         }
-        if (fields[0] != "salt") {
-            type = fields[0]
-            log.debug("recieved a message that does not begin with 'salt':\n${tag} :\n ${data}")
-        }
-        //do the vulcan mind meld
-        sendToVertxBus(dstAddr, new JsonObject(['tags': fields, 'data': data]), { res ->
-            log.debug('result of vxbus send for ' + fields + " : " + res)
-            return (true)
-        })
-        log.debug("event: ${["type": type, "data": data, "ident": ident, "verb": verb]}")
-
 
     }
 
-    public boolean removeReflector(String RID, cb) {
+    public void removeReflector(String RID, cb) {
         try {
             MessageConsumer r = reflectors[RID] as MessageConsumer
             r.unregister()
@@ -82,7 +85,7 @@ class subscriptionManager implements SVXSubscriptionManager {
         cb()
     }
 
-    public boolean createReflector(String vxchannel, String saltaddr, cb) {
+    public void createReflector(String vxchannel, String saltaddr, cb) {
         def ret = true
         MessageConsumer subscriptionChannel = eb.consumer(vxchannel)
         subscriptionChannel.handler({ message ->
@@ -100,7 +103,7 @@ class subscriptionManager implements SVXSubscriptionManager {
         cb(RID)
     }
 
-    private boolean sendToVertxBus(channel, JsonObject pkg, cb) {
+    private void sendToVertxBus(channel, JsonObject pkg, cb) {
         def ret = true
         try {
             eb.publish(channel, pkg)
@@ -112,7 +115,7 @@ class subscriptionManager implements SVXSubscriptionManager {
             cb([status: ret, error: null])
     }
 
-    private boolean sendToSaltBus(String tag, String data, cb) {
+    private void sendToSaltBus(String tag, String data, cb) {
         Future tsk = new CompletableFuture()
         def ret = true
         try {
@@ -157,7 +160,7 @@ class subscriptionManager implements SVXSubscriptionManager {
     }
  */
 
-    private boolean processEBReq(JsonObject req, cb) {
+    private void processEBReq(JsonObject req, cb) {
         def type = req.getString("action")
         def response
         switch (type) {
