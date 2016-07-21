@@ -136,7 +136,7 @@ class subscriptionManager implements SVXSubscriptionManager {
                 log.error("error ${e}")
             }
             processEBReq(jreq, { response ->
-                log.debug('processed ${response}')
+                log.debug("processed ${response}")
                 message.reply(response)
             })
             log.debug("vertx message: ${message.body()}")
