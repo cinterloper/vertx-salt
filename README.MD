@@ -7,5 +7,8 @@ https://github.com/saltstack/salt/blob/6a691360808b1f3b7e9a10726b9c4803f8455aa1/
 
 ['salt', 'netapi', 'hook' .. ( the rest of your tags here) ]
 
+in salt address format:
+
+salt/netapi/hook/...
 
 so generally you need to setup a salt reactor to catch them, unless you change the base in app.py (cherry)
