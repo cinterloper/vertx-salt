@@ -26,11 +26,11 @@ repositories {
     }
 }
 
-def libversion = '3.3.2'
+def libversion = '3.3.3'
 if(System.getenv("VERTX_VERSION") != null)
     libversion = System.getenv("VERTX_VERSION")
 
-version = "${libversion}-10"
+version = "${libversion}-12"
 sourceCompatibility = '1.8'
 
 dependencies {
