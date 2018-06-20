@@ -1,8 +1,6 @@
 /**
  * Created by grant on 10/20/15.
  */
-
-import com.google.gson.reflect.TypeToken
 import com.suse.salt.netapi.AuthModule
 import com.suse.salt.netapi.client.SaltClient
 import com.suse.salt.netapi.config.ClientConfig
@@ -14,7 +12,7 @@ import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.groovy.core.Vertx as GVertx
 import io.vertx.core.Vertx
-import net.iowntheinter.saltReactor.impl.saltReactor
+import net.iowntheinter.saltReactor.impl.SaltReactor
 
 println("simple example in groovy, but you can do this in java," +
         "everything else compiles to a class")
@@ -39,7 +37,7 @@ l.info("user: $UN pass: $pass")
 token = client.login(UN, pass, AuthModule.PAM);
 println("salt auth token: " + token.token + " Until: " + token.expire + " Perms : " + token.getPerms() )
 
-EventListener sr = new saltReactor(v,new JsonObject(), client)
+EventListener sr = new SaltReactor(v,new JsonObject(), client)
 
 es = new EventStream(cfg)
 es.addEventListener(sr)

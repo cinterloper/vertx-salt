@@ -26,22 +26,22 @@ repositories {
     }
 }
 
-def libversion = '3.3.3'
+def libversion = '3.5.2'
 if(System.getenv("VERTX_VERSION") != null)
     libversion = System.getenv("VERTX_VERSION")
 
-version = "${libversion}-14"
+version = "${libversion}-1.0"
 sourceCompatibility = '1.8'
 
 dependencies {
+    compile 'me.escoffier.vertx:vertx-completable-future:0.1.3-SNAPSHOT'
     compile "io.vertx:vertx-core:$libversion"
-    compile "io.vertx:vertx-lang-groovy:$libversion"
     compile "io.vertx:vertx-auth-common:$libversion"
     compile "io.vertx:vertx-auth-shiro:$libversion"
-    compile "io.vertx:vertx-shell:$libversion"
     compile "org.slf4j:slf4j-api:1.7.12"
-    compile 'org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk:1.13'
-    compile 'com.suse.salt:salt-netapi-client:0.9.0'
+    compile 'org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk:1.13.1'
+    compile 'org.codehaus.groovy:groovy:2.5.0'
+    compile 'com.suse.salt:salt-netapi-client:0.14.0'
 }
 
 mainClassName = 'io.vertx.core.Launcher'

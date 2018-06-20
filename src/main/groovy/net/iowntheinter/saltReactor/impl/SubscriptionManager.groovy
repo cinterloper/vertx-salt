@@ -2,28 +2,35 @@ package net.iowntheinter.saltReactor.impl
 
 import com.suse.salt.netapi.client.SaltClient
 import com.suse.salt.netapi.datatypes.Event
+import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
+import io.vertx.core.AsyncResult
+import io.vertx.core.Future
+import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.LoggerFactory
 import io.vertx.core.eventbus.EventBus
+import me.escoffier.vertx.completablefuture.VertxCompletableFuture
 import net.iowntheinter.saltReactor.SVXSubscriptionManager
 import io.vertx.core.eventbus.MessageConsumer
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Future
 
 /**
  * Created by grant on 11/5/15.
  */
-class subscriptionManager implements SVXSubscriptionManager {
+@TypeChecked
+@CompileStatic
+class SubscriptionManager implements SVXSubscriptionManager {
     private EventBus eb
     private Logger log
     private subscriptionChannel
     private SaltClient saltClient
     private HashMap reflectors = new HashMap()
 
-    subscriptionManager(EventBus e, SaltClient c) {
+    SubscriptionManager(EventBus e, SaltClient c) {
         eb = e
-        log = LoggerFactory.getLogger("saltReactor:subscriptionManager")
+        log = LoggerFactory.getLogger("SaltReactor:SubscriptionManager")
         saltClient = c
     }
     /*examples:
@@ -36,7 +43,7 @@ class subscriptionManager implements SVXSubscriptionManager {
      */
 
     @Override
-    public boolean process(Event e) {
+    boolean process(Event e) {
         def data = e.getData()
         def tag = e.getTag()
         log.debug("got salt event ${tag}")
@@ -53,7 +60,7 @@ class subscriptionManager implements SVXSubscriptionManager {
         try {
             List fields = tag.tokenize('/')
             if ((fields.last() == fields.first()) && fields.size() == 2) {
-                dstAddr = fields.first();
+                dstAddr = fields.first()
             } else { //addressed to salt/job or salt/cloud, simple
                 dstAddr = fields[0] + '/' + fields[1]
             }
@@ -74,19 +81,22 @@ class subscriptionManager implements SVXSubscriptionManager {
 
     }
 
-    public void removeReflector(String RID, cb) {
+    void removeReflector(String RID, Handler<AsyncResult> cb) {
+        boolean fail = false
         try {
             MessageConsumer r = reflectors[RID] as MessageConsumer
             r.unregister()
         }
         catch (e) {
+            fail = true
+            cb.handle(Future.failedFuture(e))
             log.error("error ${e}")
         }
-        cb()
+        cb.handle(Future.succeededFuture())
     }
 
-    public void createReflector(String vxchannel, String saltaddr, cb) {
-        def ret = true
+    void createReflector(String vxchannel, String saltaddr, Handler<AsyncResult> cb) {
+        boolean ret = true
         MessageConsumer subscriptionChannel = eb.consumer(vxchannel)
         subscriptionChannel.handler({ message ->
             String jreq = ""
@@ -98,38 +108,40 @@ class subscriptionManager implements SVXSubscriptionManager {
             }
         })
         //store a refrence to the channel so it can be removed, return the id
-        def RID = UUID.randomUUID().toString()
+        String RID = UUID.randomUUID().toString()
         reflectors[RID] = subscriptionChannel
-        cb(RID)
+        cb.handle(Future.succeededFuture(RID))
     }
 
-    private void sendToVertxBus(channel, JsonObject pkg, cb) {
-        def ret = true
+    private void sendToVertxBus(String channel, JsonObject pkg, Handler<AsyncResult> cb) {
+        boolean fail = false
         try {
             eb.publish(channel, pkg)
         } catch (e) {
-            ret = false
-            cb([status: ret, error: e.getMessage()])
+            cb.handle(Future.failedFuture(e))
+            fail = true
         }
-        if (ret)
-            cb([status: ret, error: null])
+        if (!fail)
+            cb.handle(Future.succeededFuture())
     }
 
-    private void sendToSaltBus(String tag, String data, cb) {
-        Future tsk = new CompletableFuture()
-        def ret = true
+    private void sendToSaltBus(String tag, String data, Handler<AsyncResult<java.util.concurrent.Future>> cb) {
+
+
+        java.util.concurrent.Future tsk = new VertxCompletableFuture()
+        boolean fail = false
         try {
             tsk = saltClient.sendEventAsync(tag as String, data as String)
         } catch (e) {
-            ret = false
-            cb([status: ret, error: e.getMessage()])
+            fail = true
+            cb.handle(Future.failedFuture(e))
         }
-        if (ret)
-            cb([status: ret, error: null, future: tsk])
+        if (!fail)
+            cb.handle(Future.succeededFuture(tsk))
     }
 
     @Override
-    public boolean manage(String vxchannel) {
+    boolean manage(String vxchannel) {
         def subscriptionChannel = eb.consumer(vxchannel)
         subscriptionChannel.handler({ message ->
             JsonObject jreq = new JsonObject()
@@ -160,29 +172,30 @@ class subscriptionManager implements SVXSubscriptionManager {
     }
  */
 
-    private void processEBReq(JsonObject req, cb) {
+    private void processEBReq(JsonObject req, Handler<AsyncResult> cb) {
         def type = req.getString("action")
         def response
         switch (type) {
             case 'list':
-                cb(reflectors.keySet())
-                break;
+                cb.handle(Future.succeededFuture(reflectors.keySet()))
+                break
             case 'saltPush': //perhaps should block loops of this message
                 String addr = req.getString("addr")
                 String data = req.getJsonObject("data")
-                sendToSaltBus(addr, data, { res ->
-                    log.info("result of sending to salt ${addr} : ${res} ")
-                    cb(res)
+                sendToSaltBus(addr, data, { java.util.concurrent.Future res ->
+
+                    log.info("result of sending to salt ${addr} : ${res.get()} ") //ugh blocking
+                    cb.handle(Future.succeededFuture(res.get()))  //@fixme blocking
                 })
 
-                break;
+                break
             case 'reflect': //reflect all messages from an arbitrary vertx channel into the salt system
                 String channel = req.getString("vertx_channel")
                 String addr = req.getString("salt_address")
                 createReflector(channel, addr, { String RID ->
-                    cb(RID)
+                    cb.handle(Future.succeededFuture(RID))
                 })
-                break;
+                break
             case 'unreflect': //remove a reflector
                 String id = req.getString("reflector_id")
                 removeReflector(id, cb)
